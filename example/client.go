@@ -35,7 +35,7 @@ func main() {
 	for {
 		select {
 		case <-time.After(time.Second):
-			if _, err := conn.Write([]byte("hello word")); err != nil {
+			if _, err := conn.Write([]byte("hello GoZinx")); err != nil {
 				fmt.Printf("write conn err: %s\n", err)
 				return
 			}

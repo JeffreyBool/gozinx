@@ -7,6 +7,7 @@
 
 package ziface
 
+//定义服务器抽象接口
 type IServer interface {
 	//启动服务器
 	Start() error

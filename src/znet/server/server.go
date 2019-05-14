@@ -5,13 +5,19 @@
   * Software: GoLand
 */
 
-package znet
+package server
 
 import (
 	"github.com/JeffreyBool/gozinx/src/ziface"
-	"fmt"
 	"net"
+	"fmt"
+	"github.com/JeffreyBool/gozinx/src/znet/connection"
+	"github.com/pkg/errors"
 )
+
+/**
+ 服务器模块
+ */
 
 type Server struct {
 	Config
@@ -27,6 +33,16 @@ type Config struct {
 	IP string
 	//服务器监听的端口
 	Port int
+}
+
+func CallbackToClient(conn *net.TCPConn, data []byte, cnt int) error {
+	fmt.Println("[Conn Handle] CallbackToClient...")
+	if _, err := conn.Write(data[:cnt]); err != nil {
+		return errors.Wrapf(err, "write back buf")
+	}
+
+	//回显业务
+	return nil
 }
 
 //初始化
@@ -63,6 +79,7 @@ func (s *Server) Start() error {
 
 		//Todo 阻塞的等待客户端连接，处理客户端连接业务 （读写）
 		fmt.Printf("start GoZinx server success, name: %s Listenning...\n", s.Name)
+		var ConnID uint32 = 1
 		for {
 			//Todo 如果有客户端链接过来，会阻塞返回
 			conn, err := listener.AcceptTCP()
@@ -74,22 +91,10 @@ func (s *Server) Start() error {
 			defer conn.Close()
 
 			//Todo 已经与客户端建立链接
-			go func() {
-				for {
-					buf := make([]byte, 512)
-					read, err := conn.Read(buf)
-					if err != nil {
-						fmt.Printf("recv buf err: %s \n", err)
-						continue
-					}
+			c := connection.NewConnection(conn, ConnID, CallbackToClient)
+			go c.Start()
 
-					//回写功能
-					fmt.Printf("server name: %s client buf: %s, len: %d \n",s.Name,buf,read)
-					if _, err = conn.Write(buf[:read]); err != nil {
-						fmt.Printf("write back buf err: %s \n", err)
-					}
-				}
-			}()
+			ConnID ++
 		}
 	}()
 

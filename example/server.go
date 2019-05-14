@@ -8,7 +8,7 @@
 package main
 
 import (
-	"github.com/JeffreyBool/gozinx/src/znet"
+	"github.com/JeffreyBool/gozinx/src/znet/server"
 )
 
 /*
@@ -17,6 +17,6 @@ import (
 
 func main() {
 	//启动 server 服务
-	server := znet.NewServer(znet.Config{Name: "GoZinx V0.1", IPVersion: "tcp4", IP: "0.0.0.0", Port: 8999})
-	server.Serve()
+	s := server.NewServer(server.Config{Name: "GoZinx V0.1", IPVersion: "tcp4", IP: "0.0.0.0", Port: 8999})
+	s.Serve()
 }
