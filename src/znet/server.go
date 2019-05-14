@@ -71,6 +71,8 @@ func (s *Server) Start() error {
 				continue
 			}
 
+			defer conn.Close()
+
 			//Todo 已经与客户端建立链接
 			go func() {
 				for {
@@ -82,6 +84,7 @@ func (s *Server) Start() error {
 					}
 
 					//回写功能
+					fmt.Printf("server name: %s client buf: %s, len: %d \n",s.Name,buf,read)
 					if _, err = conn.Write(buf[:read]); err != nil {
 						fmt.Printf("write back buf err: %s \n", err)
 					}
