@@ -22,16 +22,16 @@ func main() {
 	//flag.String("server name","GoZinx V0.1",)
 
 	fmt.Println("client start...")
-	//Todo 直接链接服务器，得到一个 conn 链接
+	//直接链接服务器，得到一个 conn 链接
 	conn, err := net.Dial("tcp", "[127.0.0.1]:8999")
 	if err != nil {
 		panic(err)
 	}
 
-	//Todo 释放链接句柄
+	//释放链接句柄
 	defer conn.Close()
 
-	//Todo 链接调用 writ 写数据
+	//链接调用 writ 写数据
 	for {
 		select {
 		case <-time.After(time.Second):

@@ -53,7 +53,7 @@ func (c *Connection) Start() {
 	//启动从当前链接读取数据
 	go c.startRead()
 
-	//Todo 启动从当前链接写数据的业务
+	//启动从当前链接写数据的业务
 }
 
 //链接读取

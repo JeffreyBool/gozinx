@@ -60,7 +60,7 @@ func NewServer(args ...Config) ziface.IServer {
 func (s *Server) Start() error {
 	fmt.Printf("[start] Server Listenner at IP: %s, Port %d, is starting\n", s.IP, s.Port)
 	go func() {
-		//Todo 获取tcp的 addr
+		//获取tcp的 addr
 		address := fmt.Sprintf("[%s]:%d", s.IP, s.Port)
 		addr, err := net.ResolveTCPAddr(s.IPVersion, address)
 		if err != nil {
@@ -69,7 +69,7 @@ func (s *Server) Start() error {
 			//return err ors.Wrap(err, "resolve tcp address error")
 		}
 
-		//Todo 监听服务器的地址
+		//监听服务器的地址
 		listener, err := net.ListenTCP(s.IPVersion, addr)
 		if err != nil {
 			fmt.Printf("listen: %s, err: %s \n", s.IPVersion, err)
@@ -77,11 +77,11 @@ func (s *Server) Start() error {
 			//return errors.Wrapf(err, "listen: %s", s.IPVersion)
 		}
 
-		//Todo 阻塞的等待客户端连接，处理客户端连接业务 （读写）
+		//阻塞的等待客户端连接，处理客户端连接业务 （读写）
 		fmt.Printf("start GoZinx server success, name: %s Listenning...\n", s.Name)
 		var ConnID uint32 = 1
 		for {
-			//Todo 如果有客户端链接过来，会阻塞返回
+			//如果有客户端链接过来，会阻塞返回
 			conn, err := listener.AcceptTCP()
 			if err != nil {
 				fmt.Printf("Accept err: %s\n", err)
@@ -90,7 +90,7 @@ func (s *Server) Start() error {
 
 			defer conn.Close()
 
-			//Todo 已经与客户端建立链接
+			//已经与客户端建立链接
 			c := connection.NewConnection(conn, ConnID, CallbackToClient)
 			go c.Start()
 
@@ -105,7 +105,7 @@ func (s *Server) Start() error {
 func (s *Server) Serve() {
 	s.Start()
 
-	//Todo 做一些启动服务器之后的额外业务
+	//做一些启动服务器之后的额外业务
 
 	//阻塞，防止进程结束
 	select {}
