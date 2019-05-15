@@ -17,4 +17,7 @@ type IRequest interface {
 
 	//得到请求数据
 	GetData() []byte
+
+	//获取 msg Id
+	GetMsgId() uint32
 }

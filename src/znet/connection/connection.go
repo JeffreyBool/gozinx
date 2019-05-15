@@ -12,9 +12,11 @@ import (
 	"github.com/JeffreyBool/gozinx/src/ziface"
 	"fmt"
 	"sync"
-	"io"
 	"github.com/JeffreyBool/gozinx/src/znet/request"
-	"github.com/JeffreyBool/gozinx/src/utils"
+	"github.com/JeffreyBool/gozinx/src/znet/datapack"
+	"io"
+	"github.com/pkg/errors"
+	"github.com/JeffreyBool/gozinx/src/znet/message"
 )
 
 /**
@@ -69,21 +71,38 @@ func (c *Connection) startRead() {
 	}()
 
 	for {
-		//读取客户端的数据到 buf 中，最大 512 字节
-		buf := make([]byte, utils.GlobalObject.MaxPackageSize)
-		_, err := c.Conn.Read(buf)
-		if err == io.EOF {
-			fmt.Printf("ConnID: %d exit\n", c.ConnID)
-			return
-		} else if err != nil {
-			fmt.Printf("recv buf err: %s\n", err)
-			continue
+		//读取客户端的数据
+		dp := datapack.NewDataPack()
+
+		//读取客户端的 msg head 二进制流 8个字节
+		buf := make([]byte, dp.GetHeadSize())
+		if _, err := io.ReadFull(c.Conn, buf); err != nil {
+			fmt.Println("read msg read error: ", err)
+			break
 		}
+		//拆包，得到msgId和msg size放在 msg消息中
+		message, err := dp.Unpack(buf)
+		if err != nil {
+			fmt.Println("unpack error: ", err)
+			break
+		}
+
+		//根据 data size 再次读取data,放在 msg data 中。
+		if message.GetMsgSize() == 0 {
+			break
+		}
+
+		data := make([]byte, message.GetMsgSize())
+		if _, err = io.ReadFull(c.Conn, data); err != nil {
+			fmt.Println("read msg data error: ", err)
+			break
+		}
+		message.SetMsg(data)
 
 		//得到当前 conn 数据的 Request 请求数据
 		req := &request.Request{
 			Conn: c,
-			Data: buf,
+			Msg:  message,
 		}
 
 		//从路由中，找到注册绑定的 conn 对应的 router 调用
@@ -122,6 +141,23 @@ func (c *Connection) RemoteAddr() net.Addr {
 	return c.Conn.RemoteAddr()
 }
 
-func (c *Connection) Send([]byte) error {
+//提供 send msg方法，将我们要发送给客户端的数据进行封包再发送
+func (c *Connection) SendMsg(msgId uint32, data []byte) error {
+	if c.Close {
+		return errors.New("connection closed when send msg")
+	}
+
+	//将 data 进行封包 ( size|id|data )
+	dp := datapack.NewDataPack()
+	binaryMsg, err := dp.Pack(message.NewMessage(msgId, data))
+	if err != nil {
+		return errors.Wrapf(err, "conn pack error msgId: %d, data: %s", msgId, data)
+	}
+
+	//将数据发送给客户端
+	if _, err := c.Conn.Write(binaryMsg); err != nil {
+		return errors.Wrap(err, "conn write error")
+	}
+
 	return nil
 }

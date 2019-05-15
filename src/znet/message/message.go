@@ -7,10 +7,19 @@
 
 package message
 
+import (
+	"github.com/JeffreyBool/gozinx/src/ziface"
+)
+
 type Message struct {
 	Id   uint32 //消息 id
 	Size uint32 //消息长度
 	Data []byte //消息内容
+}
+
+//消息初始化
+func NewMessage(id uint32, data []byte) ziface.IMessage {
+	return &Message{Id: id, Data: data}
 }
 
 //获取消息 id
