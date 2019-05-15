@@ -40,18 +40,26 @@ type GlobalObj struct {
 
 	//当前gozinx 框架数据包的最大值
 	MaxPackageSize uint32 `json:"max_package_size"`
+
+	//当前工作 worker 池的 goroutine 数量
+	WorkerPoolSize uint32 `json:"worker_pool_size"`
+
+	//GoZinx 框架允许用户最多开辟多少个 worker 数量
+	MaxWorkerTaskSize uint32 `json:"max_worker_task_size"`
 }
 
 var GlobalObject *GlobalObj
 
 func init() {
 	GlobalObject = &GlobalObj{
-		Name:           "GoZinx Server",
-		Version:        "v0.4",
-		TcpPort:        8999,
-		Host:           "0.0.0.0",
-		MaxConn:        1000,
-		MaxPackageSize: 4096,
+		Name:              "GoZinx Server",
+		Version:           "v0.4",
+		TcpPort:           8999,
+		Host:              "0.0.0.0",
+		MaxConn:           1000,
+		MaxPackageSize:    4096,
+		WorkerPoolSize:    10,
+		MaxWorkerTaskSize: 1024,
 	}
 
 	GlobalObject.reLoad()

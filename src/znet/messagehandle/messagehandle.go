@@ -11,18 +11,30 @@ import (
 	"github.com/JeffreyBool/gozinx/src/ziface"
 	"github.com/pkg/errors"
 	"fmt"
+	"github.com/JeffreyBool/gozinx/src/utils"
 )
 
 /**
  * 消息处理模块的实现
  */
 type MessageHandle struct {
+	//负责 Worker 去任务的消息队列
+	TaskQueue []chan ziface.IRequest
+
+	//业务工作 Worker 池的数量
+	WorkerPoolSize uint32
+
+	//存放每个 msgId 对应的处理方法
 	Routers map[uint32]ziface.IRouter
 }
 
 //初始化
 func NewMessageHandle() ziface.IMessageHandle {
-	return &MessageHandle{map[uint32]ziface.IRouter{}}
+	return &MessageHandle{
+		WorkerPoolSize: utils.GlobalObject.WorkerPoolSize,
+		TaskQueue:      make([]chan ziface.IRequest, utils.GlobalObject.MaxWorkerTaskSize),
+		Routers:        map[uint32]ziface.IRouter{},
+	}
 }
 
 //调度 执行对应的 router 消息处理方法
