@@ -32,7 +32,7 @@ func main() {
 	for {
 		select {
 		case <-time.After(time.Second):
-			if _, err := conn.Write([]byte("hello GoZinx v.0.3")); err != nil {
+			if _, err := conn.Write([]byte("hello GoZinx v.3")); err != nil {
 				fmt.Printf("write conn err: %s\n", err)
 				return
 			}

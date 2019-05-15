@@ -16,7 +16,20 @@ import (
 
 /**
  服务器模块
- */
+ **/
+
+var zinx_logo = `                                        
+              ██                        
+              ▀▀                        
+ ████████   ████     ██▄████▄  ▀██  ██▀ 
+     ▄█▀      ██     ██▀   ██    ████   
+   ▄█▀        ██     ██    ██    ▄██▄   
+ ▄██▄▄▄▄▄  ▄▄▄██▄▄▄  ██    ██   ▄█▀▀█▄  
+ ▀▀▀▀▀▀▀▀  ▀▀▀▀▀▀▀▀  ▀▀    ▀▀  ▀▀▀  ▀▀▀ 
+                                        `
+var top_line    = `┌───────────────────────────────────────────────────┐`
+var border_line = `│`
+var bottom_line = `└───────────────────────────────────────────────────┘`
 
 type Server struct {
 	Config
@@ -46,10 +59,12 @@ func NewServer(args ...Config) ziface.IServer {
 		config = Config{Name: "", IPVersion: "tcp4", IP: "0.0.0.0", Port: 8999}
 	}
 
-	return &Server{Config: config, Router: new(ziface.IRouter)}
+	return &Server{Config: config, Router: nil}
 }
 
 func (s *Server) Start() error {
+	fmt.Println(zinx_logo)
+
 	fmt.Printf("[start] Server Listenner at IP: %s, Port %d, is starting\n", s.IP, s.Port)
 	go func() {
 		//获取tcp的 addr
