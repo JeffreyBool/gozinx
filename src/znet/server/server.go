@@ -12,6 +12,7 @@ import (
 	"net"
 	"fmt"
 	"github.com/JeffreyBool/gozinx/src/znet/connection"
+	"github.com/JeffreyBool/gozinx/src/utils"
 )
 
 /**
@@ -27,9 +28,15 @@ var zinx_logo = `
  ▄██▄▄▄▄▄  ▄▄▄██▄▄▄  ██    ██   ▄█▀▀█▄  
  ▀▀▀▀▀▀▀▀  ▀▀▀▀▀▀▀▀  ▀▀    ▀▀  ▀▀▀  ▀▀▀ 
                                         `
-var top_line    = `┌───────────────────────────────────────────────────┐`
+var top_line = `┌───────────────────────────────────────────────────┐`
 var border_line = `│`
 var bottom_line = `└───────────────────────────────────────────────────┘`
+
+func init() {
+	fmt.Println(top_line)
+	fmt.Println(zinx_logo)
+	fmt.Println(bottom_line)
+}
 
 type Server struct {
 	Config
@@ -56,16 +63,14 @@ func NewServer(args ...Config) ziface.IServer {
 	if len(args) > 0 {
 		config = args[0]
 	} else {
-		config = Config{Name: "", IPVersion: "tcp4", IP: "0.0.0.0", Port: 8999}
+		config = Config{Name: utils.GlobalObject.Name, IPVersion: "tcp4", IP: utils.GlobalObject.Host, Port: utils.GlobalObject.TcpPort}
 	}
 
 	return &Server{Config: config, Router: nil}
 }
 
 func (s *Server) Start() error {
-	fmt.Println(zinx_logo)
-
-	fmt.Printf("[start] Server Listenner at IP: %s, Port %d, is starting\n", s.IP, s.Port)
+	fmt.Printf("[START] Server name: %s,listenner at IP: %s, Port %d is starting\n", s.Name, s.IP, s.Port)
 	go func() {
 		//获取tcp的 addr
 		address := fmt.Sprintf("[%s]:%d", s.IP, s.Port)
@@ -126,5 +131,4 @@ func (s *Server) Stop() error {
 //服务添加路由
 func (s *Server) AddRouter(router ziface.IRouter) {
 	s.Router = router
-	fmt.Println("Add Router success")
 }

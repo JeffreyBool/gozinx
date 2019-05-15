@@ -46,7 +46,7 @@ func (router *PingRouter) AfterHandle(request ziface.IRequest) {
 
 func main() {
 	//new server 服务
-	s := server.NewServer(server.Config{Name: "GoZinx V0.1", IPVersion: "tcp4", IP: "0.0.0.0", Port: 8999})
+	s := server.NewServer()
 
 	//给 server 添加一个自定义的 router
 	s.AddRouter(&PingRouter{})

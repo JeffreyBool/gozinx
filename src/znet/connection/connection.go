@@ -14,6 +14,7 @@ import (
 	"sync"
 	"io"
 	"github.com/JeffreyBool/gozinx/src/znet/request"
+	"github.com/JeffreyBool/gozinx/src/utils"
 )
 
 /**
@@ -33,7 +34,7 @@ type Connection struct {
 	Close bool
 
 	//告知当前链接已经退出 (close channel)
-	Exit  chan bool
+	Exit chan bool
 
 	//锁
 	mutex *sync.Mutex
@@ -69,7 +70,7 @@ func (c *Connection) startRead() {
 
 	for {
 		//读取客户端的数据到 buf 中，最大 512 字节
-		buf := make([]byte, 512)
+		buf := make([]byte, utils.GlobalObject.MaxPackageSize)
 		_, err := c.Conn.Read(buf)
 		if err == io.EOF {
 			fmt.Printf("ConnID: %d exit\n", c.ConnID)
