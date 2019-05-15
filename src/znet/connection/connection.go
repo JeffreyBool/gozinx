@@ -108,7 +108,12 @@ func (c *Connection) startRead() {
 			Msg:  message,
 		}
 
-		go c.MsgHandle.DoMsgHandler(req)
+		go func() {
+			if err := c.MsgHandle.DoMsgHandler(req); err != nil {
+				fmt.Println("do msg handle error: ", err)
+				return
+			}
+		}()
 	}
 }
 

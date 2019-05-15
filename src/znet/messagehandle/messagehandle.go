@@ -27,14 +27,14 @@ func NewMessageHandle() ziface.IMessageHandle {
 
 //调度 执行对应的 router 消息处理方法
 func (m *MessageHandle) DoMsgHandler(request ziface.IRequest) error {
-	route, ok := m.Routers[request.GetMsgId()]
-	if ok {
-		return errors.Wrapf(errors.New("do msg handle error"), "api MsgId: [%d] is not found need register")
+	router, ok := m.Routers[request.GetMsgId()]
+	if !ok {
+		return errors.Wrapf(errors.New("do msg handle error"), "api MsgId: [%d] is not found need register", request.GetMsgId())
 	}
 
-	route.BeforeHandle(request)
-	route.Handle(request)
-	route.AfterHandle(request)
+	router.BeforeHandle(request)
+	router.Handle(request)
+	router.AfterHandle(request)
 	return nil
 }
 

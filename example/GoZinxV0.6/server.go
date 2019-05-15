@@ -33,12 +33,28 @@ func (router *PingRouter) Handle(request ziface.IRequest) {
 	}
 }
 
+//HelloRouter test 自定义路由
+type HelloRouter struct {
+	router.BaseRouter
+}
+
+func (router *HelloRouter) Handle(request ziface.IRequest) {
+	fmt.Println("Call Router Handle...")
+	fmt.Printf("recv from client MsgId: %d, MsgData: %s\n", request.GetMsgId(), request.GetData())
+	//选读取客户端发送的数据
+	err := request.GetConnection().SendMsg(request.GetMsgId(), []byte("Hello Welcome To GoZinx\n"))
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
 func main() {
 	//new server 服务
 	s := server.NewServer()
 
 	//给 server 添加一个自定义的 router
-	s.AddRouter(0,&PingRouter{})
+	s.AddRouter(1, &PingRouter{})
+	s.AddRouter(2, &HelloRouter{})
 
 	//启动 server
 	s.Serve()

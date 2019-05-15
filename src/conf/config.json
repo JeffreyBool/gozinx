@@ -4,5 +4,5 @@
   "port": 8999,
   "max_conn": 3,
   "max_package_size": 4096,
-  "version": "v0.5"
+  "version": "v0.6"
 }
