@@ -24,9 +24,9 @@ type PingRouter struct {
 }
 
 func (router *PingRouter) Handle(request ziface.IRequest) {
-	fmt.Printf("msgId: %d,msgData: %s, Call Router Handle...", request.GetMsgId(), request.GetData())
+	fmt.Printf("msgId: %d,msgData: %s, Call Router Handle...\n", request.GetMsgId(), request.GetData())
 	//选读取客户端发送的数据
-	request.GetConnection().SendMsg(request.GetMsgId(), []byte("call server router ping..."))
+	request.GetConnection().SendMsg(request.GetMsgId(), []byte("call server router ping...\n"))
 }
 
 func main() {

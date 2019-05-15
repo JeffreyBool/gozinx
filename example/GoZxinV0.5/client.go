@@ -15,6 +15,9 @@ import (
 	"fmt"
 	"net"
 	"time"
+	"github.com/JeffreyBool/gozinx/src/znet/message"
+	"github.com/JeffreyBool/gozinx/src/znet/datapack"
+	"io"
 )
 
 func main() {
@@ -29,21 +32,51 @@ func main() {
 	defer conn.Close()
 
 	//链接调用 writ 写数据
+	var id uint32 = 0
 	for {
 		select {
 		case <-time.After(time.Second):
-			if _, err := conn.Write([]byte("hello GoZinx v.3")); err != nil {
-				fmt.Printf("write conn err: %s\n", err)
-				return
+
+			//发送封包的 message 消息
+			id++
+			dp := datapack.NewDataPack()
+			binaryMsg, err := dp.Pack(message.NewMessage(id, []byte("hello GoZinx v.5")))
+			if err != nil {
+				fmt.Println("pack error: ", err)
+				break
 			}
 
-			buf := make([]byte, 512)
-			if _, err := conn.Read(buf); err != nil {
-				fmt.Printf("read buf err: %s\n", err)
-				return
+			if _, err = conn.Write(binaryMsg); err != nil {
+				fmt.Println("write error: ", err)
+				break
 			}
 
-			fmt.Printf("server call back: %s\n", buf)
+			//接受服务器返回的ping 消息拆包。
+			binaryHead := make([]byte, dp.GetHeadSize())
+			if _, err = io.ReadFull(conn, binaryHead); err != nil {
+				fmt.Println("read head error: ", err)
+				break
+			}
+
+			msgHead, err := dp.Unpack(binaryMsg)
+			if err != nil {
+				fmt.Println("client unpack msg head error: ", err)
+				break
+			}
+
+			if msgHead.GetMsgSize() == 0 {
+				break
+			}
+
+			//再根据 data size 的长度将 data 读取出来
+			buf := make([]byte, msgHead.GetMsgSize())
+			if _, err := io.ReadFull(conn, buf); err != nil {
+				fmt.Println("read msg data error: ", err)
+				break
+			}
+			msgHead.SetMsg(buf)
+
+			fmt.Printf("---> Recv Server MsgId: %d, MsgSize: %d, MsgData: %s \n", msgHead.GetMsgId(), msgHead.GetMsgSize(), msgHead.GetMsg())
 		}
 	}
 }
