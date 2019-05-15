@@ -12,7 +12,6 @@ import (
 	"net"
 	"fmt"
 	"github.com/JeffreyBool/gozinx/src/znet/connection"
-	"github.com/pkg/errors"
 )
 
 /**
@@ -21,6 +20,9 @@ import (
 
 type Server struct {
 	Config
+
+	//当前的 Server 添加一个 router, server 注册的链接对应的处理业务
+	Router ziface.IRouter
 }
 
 //服务器配置
@@ -35,16 +37,6 @@ type Config struct {
 	Port int
 }
 
-func CallbackToClient(conn *net.TCPConn, data []byte, cnt int) error {
-	fmt.Println("[Conn Handle] CallbackToClient...")
-	if _, err := conn.Write(data[:cnt]); err != nil {
-		return errors.Wrapf(err, "write back buf")
-	}
-
-	//回显业务
-	return nil
-}
-
 //初始化
 func NewServer(args ...Config) ziface.IServer {
 	var config Config
@@ -54,7 +46,7 @@ func NewServer(args ...Config) ziface.IServer {
 		config = Config{Name: "", IPVersion: "tcp4", IP: "0.0.0.0", Port: 8999}
 	}
 
-	return &Server{config}
+	return &Server{Config: config, Router: new(ziface.IRouter)}
 }
 
 func (s *Server) Start() error {
@@ -91,7 +83,7 @@ func (s *Server) Start() error {
 			defer conn.Close()
 
 			//已经与客户端建立链接
-			c := connection.NewConnection(conn, ConnID, CallbackToClient)
+			c := connection.NewConnection(conn, ConnID, s.Router)
 			go c.Start()
 
 			ConnID ++
@@ -111,7 +103,13 @@ func (s *Server) Serve() {
 	select {}
 }
 
+//服务停止
 func (s *Server) Stop() error {
-	//Todo
 	return nil
+}
+
+//服务添加路由
+func (s *Server) AddRouter(router ziface.IRouter) {
+	s.Router = router
+	fmt.Println("Add Router success")
 }

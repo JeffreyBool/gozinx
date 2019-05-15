@@ -30,6 +30,3 @@ type IConnection interface {
 	//发送数据， 将数据发送给客户端
 	Send([]byte) error
 }
-
-//定义一个处理链接业务的回调函数
-type HandleFunc func(*net.TCPConn, []byte, int) error

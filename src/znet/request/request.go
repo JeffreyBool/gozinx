@@ -13,18 +13,18 @@ import (
 
 type Request struct {
 	//客户端建立的链接
-	conn ziface.IConnection
+	Conn ziface.IConnection
 
 	//客户端请求的数据
-	data []byte
+	Data []byte
 }
 
 //获取客户端链接
 func (r *Request) GetConnection() ziface.IConnection {
-	return r.conn
+	return r.Conn
 }
 
 //获取客户端数据
 func (r *Request) GetData() []byte {
-	return r.data
+	return r.Data
 }

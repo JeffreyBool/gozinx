@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"sync"
 	"io"
+	"github.com/JeffreyBool/gozinx/src/znet/request"
 )
 
 /**
@@ -25,25 +26,27 @@ type Connection struct {
 	//链接的 ID
 	ConnID uint32
 
-	//当前链接所绑定的处理业务方法回调函数
-	Callback ziface.HandleFunc
+	//当前链接所绑定的 router
+	Router ziface.IRouter
 
 	//当前链接的状态
 	Close bool
 
 	//告知当前链接已经退出 (close channel)
 	Exit  chan bool
+
+	//锁
 	mutex *sync.Mutex
 }
 
 //初始化链接
-func NewConnection(conn *net.TCPConn, ConnID uint32, Callback ziface.HandleFunc) ziface.IConnection {
+func NewConnection(conn *net.TCPConn, ConnID uint32, router ziface.IRouter) ziface.IConnection {
 	return &Connection{
-		Conn:     conn,
-		ConnID:   ConnID,
-		Callback: Callback,
-		Exit:     make(chan bool, 1),
-		mutex:    new(sync.Mutex),
+		Conn:   conn,
+		ConnID: ConnID,
+		Router: router,
+		Exit:   make(chan bool, 1),
+		mutex:  new(sync.Mutex),
 	}
 }
 
@@ -67,7 +70,7 @@ func (c *Connection) startRead() {
 	for {
 		//读取客户端的数据到 buf 中，最大 512 字节
 		buf := make([]byte, 512)
-		read, err := c.Conn.Read(buf)
+		_, err := c.Conn.Read(buf)
 		if err == io.EOF {
 			fmt.Printf("ConnID: %d exit\n", c.ConnID)
 			return
@@ -76,11 +79,18 @@ func (c *Connection) startRead() {
 			continue
 		}
 
-		//调用客户端传递的回调函数
-		if err = c.Callback(c.Conn, buf, read); err != nil {
-			fmt.Println("ConnId", c.ConnID, "handle is error", err)
-			return
+		//得到当前 conn 数据的 Request 请求数据
+		req := &request.Request{
+			Conn: c,
+			Data: buf,
 		}
+
+		//从路由中，找到注册绑定的 conn 对应的 router 调用
+		go func(request ziface.IRequest) {
+			c.Router.AfterHandle(request)
+			c.Router.Handle(request)
+			c.Router.BeforeHandle(request)
+		}(req)
 	}
 }
 

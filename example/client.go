@@ -18,9 +18,6 @@ import (
 )
 
 func main() {
-
-	//flag.String("server name","GoZinx V0.1",)
-
 	fmt.Println("client start...")
 	//直接链接服务器，得到一个 conn 链接
 	conn, err := net.Dial("tcp", "[127.0.0.1]:8999")
@@ -35,7 +32,7 @@ func main() {
 	for {
 		select {
 		case <-time.After(time.Second):
-			if _, err := conn.Write([]byte("hello GoZinx")); err != nil {
+			if _, err := conn.Write([]byte("hello GoZinx v.0.3")); err != nil {
 				fmt.Printf("write conn err: %s\n", err)
 				return
 			}
