@@ -12,11 +12,11 @@ import (
 	"github.com/JeffreyBool/gozinx/src/ziface"
 	"fmt"
 	"sync"
-	"github.com/JeffreyBool/gozinx/src/znet/request"
 	"github.com/JeffreyBool/gozinx/src/znet/datapack"
 	"io"
 	"github.com/pkg/errors"
 	"github.com/JeffreyBool/gozinx/src/znet/message"
+	"github.com/JeffreyBool/gozinx/src/znet/request"
 )
 
 /**
@@ -62,16 +62,16 @@ func (c *Connection) Start() {
 	//启动从当前链接写数据的业务
 }
 
-//链接读取
+//读消息Goroutine，用于从客户端中读取数据
 func (c *Connection) startRead() {
 	fmt.Println("Conn Read Goroutine is running...")
 	defer func() {
-		fmt.Printf("Conn Stop ConnID = %d, Read is exit, remote addr is %s", c.ConnID, c.RemoteAddr().String())
+		fmt.Printf("Conn Stop ConnID = %d, Read is exit, remote addr is %s\n", c.ConnID, c.RemoteAddr().String())
 		c.Stop()
 	}()
 
 	for {
-		//读取客户端的数据
+		// 创建拆包解包的对象
 		dp := datapack.NewDataPack()
 
 		//读取客户端的 msg head 二进制流 8个字节
@@ -80,19 +80,22 @@ func (c *Connection) startRead() {
 			fmt.Println("read msg read error: ", err)
 			break
 		}
+
 		//拆包，得到msgId和msg size放在 msg消息中
 		message, err := dp.Unpack(buf)
 		if err != nil {
-			fmt.Println("unpack error: ", err)
+			fmt.Println("conn unpack error: ", err)
 			break
 		}
 
 		//根据 data size 再次读取data,放在 msg data 中。
+		var data []byte
 		if message.GetMsgSize() == 0 {
+			fmt.Println("conn msg illegal data")
 			break
 		}
 
-		data := make([]byte, message.GetMsgSize())
+		data = make([]byte, message.GetMsgSize())
 		if _, err = io.ReadFull(c.Conn, data); err != nil {
 			fmt.Println("read msg data error: ", err)
 			break

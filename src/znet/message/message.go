@@ -19,7 +19,7 @@ type Message struct {
 
 //消息初始化
 func NewMessage(id uint32, data []byte) ziface.IMessage {
-	return &Message{Id: id, Data: data}
+	return &Message{Id: id, Data: data, Size: uint32(len(data))}
 }
 
 //获取消息 id
