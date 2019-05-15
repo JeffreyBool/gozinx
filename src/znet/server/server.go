@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"github.com/JeffreyBool/gozinx/src/znet/connection"
 	"github.com/JeffreyBool/gozinx/src/utils"
+	"github.com/JeffreyBool/gozinx/src/znet/messagehandle"
 )
 
 /**
@@ -41,8 +42,8 @@ func init() {
 type Server struct {
 	Config
 
-	//当前的 Server 添加一个 router, server 注册的链接对应的处理业务
-	Router ziface.IRouter
+	//当前的 Server 的消息管理模块，用来绑定 msgId 和对应处理业务 API 关系
+	MsgHandle ziface.IMessageHandle
 }
 
 //服务器配置
@@ -66,7 +67,10 @@ func NewServer(args ...Config) ziface.IServer {
 		config = Config{Name: utils.GlobalObject.Name, IPVersion: "tcp4", IP: utils.GlobalObject.Host, Port: utils.GlobalObject.TcpPort}
 	}
 
-	return &Server{Config: config, Router: nil}
+	return &Server{
+		Config:    config,
+		MsgHandle: messagehandle.NewMessageHandle(),
+	}
 }
 
 func (s *Server) Start() error {
@@ -103,7 +107,7 @@ func (s *Server) Start() error {
 			defer conn.Close()
 
 			//已经与客户端建立链接
-			c := connection.NewConnection(conn, ConnID, s.Router)
+			c := connection.NewConnection(conn, ConnID, s.MsgHandle)
 			go c.Start()
 
 			ConnID ++
@@ -129,6 +133,6 @@ func (s *Server) Stop() error {
 }
 
 //服务添加路由
-func (s *Server) AddRouter(router ziface.IRouter) {
-	s.Router = router
+func (s *Server) AddRouter(msgId uint32, router ziface.IRouter) error {
+	return s.MsgHandle.AddRouter(msgId, router)
 }

@@ -29,8 +29,8 @@ type Connection struct {
 	//链接的 ID
 	ConnID uint32
 
-	//当前链接所绑定的 router
-	Router ziface.IRouter
+	//当前的 Server 的消息管理模块，用来绑定 msgId 和对应处理业务 API 关系
+	MsgHandle ziface.IMessageHandle
 
 	//当前链接的状态
 	Close bool
@@ -43,13 +43,13 @@ type Connection struct {
 }
 
 //初始化链接
-func NewConnection(conn *net.TCPConn, ConnID uint32, router ziface.IRouter) ziface.IConnection {
+func NewConnection(conn *net.TCPConn, ConnID uint32, msgHandle ziface.IMessageHandle) ziface.IConnection {
 	return &Connection{
-		Conn:   conn,
-		ConnID: ConnID,
-		Router: router,
-		Exit:   make(chan bool, 1),
-		mutex:  new(sync.Mutex),
+		Conn:      conn,
+		ConnID:    ConnID,
+		MsgHandle: msgHandle,
+		Exit:      make(chan bool, 1),
+		mutex:     new(sync.Mutex),
 	}
 }
 
@@ -108,12 +108,7 @@ func (c *Connection) startRead() {
 			Msg:  message,
 		}
 
-		//从路由中，找到注册绑定的 conn 对应的 router 调用
-		go func(request ziface.IRequest) {
-			c.Router.AfterHandle(request)
-			c.Router.Handle(request)
-			c.Router.BeforeHandle(request)
-		}(req)
+		go c.MsgHandle.DoMsgHandler(req)
 	}
 }
 

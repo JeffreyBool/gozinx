@@ -19,5 +19,5 @@ type IServer interface {
 	Stop() error
 
 	//路由功能： 给当前的服务注册一个路由方法，供客户端链接处理方法
-	AddRouter(IRouter)
+	AddRouter(uint32, IRouter) error
 }

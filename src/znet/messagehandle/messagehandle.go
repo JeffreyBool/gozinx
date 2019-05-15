@@ -35,7 +35,6 @@ func (m *MessageHandle) DoMsgHandler(request ziface.IRequest) error {
 	route.BeforeHandle(request)
 	route.Handle(request)
 	route.AfterHandle(request)
-
 	return nil
 }
 
