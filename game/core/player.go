@@ -13,9 +13,10 @@ import (
 	"math/rand"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
+	pb "github.com/JeffreyBool/gozinx/game/proto"
 )
 
-var PidGen uint32 = 1 //用来生产玩家的 Id计数器
+var PidGen uint32 = 0 //用来生产玩家的 Id计数器
 
 //玩家对象
 type Player struct {
@@ -44,8 +45,53 @@ func NewPlayer(conn ziface.IConnection) *Player {
 }
 
 //告知客户端pid,同步已经生成的玩家ID给客户端
+func (p *Player) SyncPid() {
+	//组件 msgId: 1 的 proto 数据
+	data := &pb.SyncPid{
+		Pid: p.Pid,
+	}
+
+	p.SendMsg(1, data)
+}
 
 //广播玩家自己的出生地点
+func (p *Player) BroadCastStartPosition() {
+	//组件msgId: 200 的 proto 数据
+	data := &pb.BroadCast{
+		Pid: p.Pid,
+		Tp:  2,
+		Data: &pb.BroadCast_P{
+			P: &pb.Position{
+				X: p.X,
+				Y: p.Y,
+				Z: p.Z,
+				V: p.V,
+			},
+		},
+	}
+
+	p.SendMsg(200, data)
+}
+
+//玩家广播世界聊天消息
+func (p *Player) Talk(content string) {
+	//1. 组建MsgId200 proto数据
+	msg := &pb.BroadCast{
+		Pid: p.Pid,
+		Tp:  1, //TP 1 代表聊天广播
+		Data: &pb.BroadCast_Content{
+			Content: content,
+		},
+	}
+
+	//2. 得到当前世界所有的在线玩家
+	players := WorldManagerObj.GetAllPlayers()
+
+	//3. 向所有的玩家发送MsgId:200消息
+	for _, player := range players {
+		player.SendMsg(200, msg)
+	}
+}
 
 /*
 	发送消息给客户端，

@@ -67,7 +67,7 @@ func init() {
 
 //加载用户配置的文件
 func (g *GlobalObj) reLoad() {
-	data, err := ioutil.ReadFile("game/conf/config.json")
+	data, err := ioutil.ReadFile("conf/config.json")
 	if err != nil {
 		panic(err)
 	}

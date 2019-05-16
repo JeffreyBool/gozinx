@@ -23,7 +23,7 @@ import (
 func main() {
 	fmt.Println("client start...")
 	//直接链接服务器，得到一个 conn 链接
-	conn, err := net.Dial("tcp", "127.0.0.1:8999")
+	conn, err := net.Dial("tcp", "192.168.99.128:8999")
 	if err != nil {
 		panic(err)
 	}
