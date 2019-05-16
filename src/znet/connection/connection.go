@@ -45,8 +45,11 @@ type Connection struct {
 	//告知当前链接已经退出 (close channel)
 	Exit chan bool
 
+	//连接属性集合
+	property map[string]interface{}
+
 	//锁
-	mutex *sync.Mutex
+	mutex *sync.RWMutex
 }
 
 //初始化链接
@@ -58,7 +61,7 @@ func NewConnection(server ziface.IServer, conn *net.TCPConn, ConnID uint32, msgH
 		MsgHandle: msgHandle,
 		msgChan:   make(chan []byte),
 		Exit:      make(chan bool, 1),
-		mutex:     new(sync.Mutex),
+		mutex:     new(sync.RWMutex),
 	}
 }
 
@@ -212,4 +215,29 @@ func (c *Connection) SendMsg(msgId uint32, data []byte) error {
 	//}
 
 	return nil
+}
+
+//设置连接属性
+func (c *Connection) SetProperty(key string, value interface{}) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	c.property[key] = value
+}
+
+//获取连接属性
+func (c *Connection) GetProperty(key string) (value interface{}, err error) {
+	c.mutex.RLock()
+	defer c.mutex.RUnlock()
+	var ok bool
+	if value, ok = c.property[key]; !ok {
+		return nil, errors.New("not property found")
+	}
+	return value, nil
+}
+
+//移除连接属性
+func (c *Connection) RemoveProperty(key string) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	delete(c.property, key)
 }

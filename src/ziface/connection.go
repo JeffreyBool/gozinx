@@ -28,7 +28,16 @@ type IConnection interface {
 	RemoteAddr() net.Addr
 
 	//发送数据， 将数据发送给客户端
-	SendMsg(uint32, []byte) error
+	SendMsg(Id uint32, data []byte) error
+
+	//设置连接属性
+	SetProperty(key string, value interface{})
+
+	//获取连接属性
+	GetProperty(key string) (value interface{}, err error)
+
+	//移除连接属性
+	RemoveProperty(key string)
 }
 
 type ConnFunc func(conn IConnection)
