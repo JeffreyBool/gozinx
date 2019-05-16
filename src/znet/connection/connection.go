@@ -73,6 +73,9 @@ func (c *Connection) Start() {
 
 	//启动从当前链接写数据的业务
 	go c.StartWrite()
+
+	//按照开发者传递进来的，创建连接之后需要调用的处理业务，执行对应的 hooK 函数
+	c.TcpServer.CallOnConnStart(c)
 }
 
 //读消息Goroutine，用于从客户端中读取数据
@@ -165,6 +168,9 @@ func (c *Connection) Stop() {
 	if c.Close {
 		return
 	}
+
+	//调用开发者注册的销毁连接之前需要执行的业务
+	c.TcpServer.CallOnConnStop(c)
 
 	c.Close = true
 	c.Conn.Close()

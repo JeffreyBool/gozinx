@@ -30,3 +30,5 @@ type IConnection interface {
 	//发送数据， 将数据发送给客户端
 	SendMsg(uint32, []byte) error
 }
+
+type ConnFunc func(conn IConnection)
