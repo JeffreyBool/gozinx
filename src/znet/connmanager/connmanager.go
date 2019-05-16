@@ -48,7 +48,7 @@ func (c *ConnManager) Add(connection ziface.IConnection) {
 	//将 conn 加入到 ConnManager中
 	c.Connections[connection.GetConnID()] = connection
 	c.size ++
-	fmt.Printf("add to connId: [%d] ConnManager successfully: conn num: [%d]", connection.GetConnID(), c.size)
+	fmt.Printf("add to connId: [%d] ConnManager successfully: conn num: [%d] \n", connection.GetConnID(), c.size)
 }
 
 //删除连接
@@ -59,7 +59,7 @@ func (c *ConnManager) Remove(connId uint32) {
 	//删除连接信息
 	delete(c.Connections, connId)
 	c.size --
-	fmt.Printf("remove forom connId: [%d] ConnManager successfully: conn num: [%d]", connId, c.size)
+	fmt.Printf("remove forom connId: [%d] ConnManager successfully: conn num: [%d] \n", connId, c.size)
 }
 
 //获取连接

@@ -113,6 +113,7 @@ func (s *Server) Start() error {
 
 			//判断设置连接的最大值
 			if int(s.ConnManager.Size()) >= utils.GlobalObject.MaxConn {
+				fmt.Printf("Too Many Connections MaxConn: [%d] \n", utils.GlobalObject.MaxConn)
 				conn.Close()
 				continue
 			}
