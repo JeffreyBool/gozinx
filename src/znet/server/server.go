@@ -109,7 +109,6 @@ func (s *Server) Start() error {
 			//已经与客户端建立链接
 			c := connection.NewConnection(conn, ConnID, s.MsgHandle)
 			go c.Start()
-
 			ConnID ++
 		}
 	}()

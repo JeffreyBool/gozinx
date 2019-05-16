@@ -114,7 +114,7 @@ func (c *Connection) startReader() {
 		}
 
 		go func() {
-			if err := c.MsgHandle.DoMsgHandler(req); err != nil {
+			if err = c.MsgHandle.DoMsgHandler(req); err != nil {
 				fmt.Println("do msg handle error: ", err)
 				return
 			}

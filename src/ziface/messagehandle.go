@@ -16,4 +16,10 @@ type IMessageHandle interface {
 
 	//为消息添加具体的处理逻辑
 	AddRouter(msgId uint32, router IRouter) error
+
+	//启动 worker 工作池
+	StartWorkerPool()
+
+	//将消息发送给消息队列处理
+	SendMsgToTaskQueue(request IRequest)
 }
