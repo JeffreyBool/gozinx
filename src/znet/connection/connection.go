@@ -61,6 +61,7 @@ func NewConnection(server ziface.IServer, conn *net.TCPConn, ConnID uint32, msgH
 		MsgHandle: msgHandle,
 		msgChan:   make(chan []byte),
 		Exit:      make(chan bool, 1),
+		property:  make(map[string]interface{}),
 		mutex:     new(sync.RWMutex),
 	}
 }
