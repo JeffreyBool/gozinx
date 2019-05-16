@@ -28,7 +28,6 @@ var zinx_logo = `
  ╚██████╔╝╚██████╔╝███████╗██║██║ ╚████║██╔╝ ██╗
   ╚═════╝  ╚═════╝ ╚══════╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝ `
 
-
 var top_line = `┌───────────────────────────────────────────────────┐`
 var border_line = `│`
 var bottom_line = `└───────────────────────────────────────────────────┘`
@@ -76,6 +75,9 @@ func NewServer(args ...Config) ziface.IServer {
 func (s *Server) Start() error {
 	fmt.Printf("[START] Server name: %s,listenner at IP: %s, Port %d is starting\n", s.Name, s.IP, s.Port)
 	go func() {
+		//开启消息队列以及 worker 工作池
+		s.MsgHandle.StartWorkerPool()
+
 		//获取tcp的 addr
 		address := fmt.Sprintf("[%s]:%d", s.IP, s.Port)
 		addr, err := net.ResolveTCPAddr(s.IPVersion, address)

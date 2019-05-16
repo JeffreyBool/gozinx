@@ -17,6 +17,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/JeffreyBool/gozinx/src/znet/message"
 	"github.com/JeffreyBool/gozinx/src/znet/request"
+	"github.com/JeffreyBool/gozinx/src/utils"
 )
 
 /**
@@ -113,12 +114,16 @@ func (c *Connection) startReader() {
 			Msg:  message,
 		}
 
-		go func() {
-			if err = c.MsgHandle.DoMsgHandler(req); err != nil {
-				fmt.Println("do msg handle error: ", err)
-				return
-			}
-		}()
+		if utils.GlobalObject.WorkerPoolSize > 0 {
+			c.MsgHandle.SendMsgToTaskQueue(req)
+		} else {
+			go func() {
+				if err = c.MsgHandle.DoMsgHandler(req); err != nil {
+					fmt.Println("do msg handle error: ", err)
+					return
+				}
+			}()
+		}
 	}
 }
 

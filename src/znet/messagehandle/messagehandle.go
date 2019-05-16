@@ -64,7 +64,7 @@ func (m *MessageHandle) AddRouter(msgId uint32, router ziface.IRouter) error {
 
 //启动 worker 工作池,
 func (m *MessageHandle) StartWorkerPool() {
-	for i := 1; i <= int(utils.GlobalObject.WorkerPoolSize); i ++ {
+	for i := 0; i < int(utils.GlobalObject.WorkerPoolSize); i ++ {
 		//当前的 worker 对应的 channel 消息队列开辟空间， 第 1 个就用 1 个 channel
 		m.TaskQueue[i] = make(chan ziface.IRequest, utils.GlobalObject.MaxWorkerTaskSize)
 
