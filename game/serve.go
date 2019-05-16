@@ -11,8 +11,8 @@ import (
 	"github.com/JeffreyBool/gozinx/src/znet/server"
 	"github.com/JeffreyBool/gozinx/src/ziface"
 	"github.com/JeffreyBool/gozinx/game/core"
-	"fmt"
 	"github.com/JeffreyBool/gozinx/game/api"
+	"fmt"
 )
 
 func main() {
@@ -36,6 +36,10 @@ func main() {
 		//将改连接绑定一个 pid 玩家的 Id属性
 		conn.SetProperty("pid", player.Pid)
 
+		//==============同步周边玩家上线信息，与现实周边玩家信息========
+		player.SyncSurrounding()
+		//=======================================================
+
 		fmt.Printf("<===== Player Id: [%d] Is Arrived ========\n", player.Pid)
 	})
 
@@ -44,7 +48,10 @@ func main() {
 	})
 
 	//注册世界聊天广播路由
-	serve.AddRouter(2, &api.WorldChatApi{})
+	serve.AddRouter(2, &api.WorldChatApi{}) //聊天
+
+	//移动路由
+	serve.AddRouter(3, &api.MoveApi{}) //移动
 
 	//启动服务
 	serve.Serve()
