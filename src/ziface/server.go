@@ -20,4 +20,7 @@ type IServer interface {
 
 	//路由功能： 给当前的服务注册一个路由方法，供客户端链接处理方法
 	AddRouter(uint32, IRouter) error
+
+	//获取当前服务的连接管理器
+	GetConnManager() IConnManager
 }

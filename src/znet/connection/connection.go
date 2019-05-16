@@ -24,6 +24,9 @@ import (
  链接模块
  */
 type Connection struct {
+	//当前 conn 属于哪个 server
+	TcpServer ziface.IServer
+
 	//当前链接的 socket tcp 套接字
 	Conn *net.TCPConn
 
@@ -47,8 +50,9 @@ type Connection struct {
 }
 
 //初始化链接
-func NewConnection(conn *net.TCPConn, ConnID uint32, msgHandle ziface.IMessageHandle) ziface.IConnection {
+func NewConnection(server ziface.IServer, conn *net.TCPConn, ConnID uint32, msgHandle ziface.IMessageHandle) ziface.IConnection {
 	return &Connection{
+		TcpServer: server,
 		Conn:      conn,
 		ConnID:    ConnID,
 		MsgHandle: msgHandle,
@@ -60,6 +64,9 @@ func NewConnection(conn *net.TCPConn, ConnID uint32, msgHandle ziface.IMessageHa
 
 func (c *Connection) Start() {
 	fmt.Printf("Conn Start() ... ConnId = %d \n", c.ConnID)
+
+	//添加一个连接
+	c.TcpServer.GetConnManager().Add(c)
 
 	//启动从当前链接读取数据
 	go c.startReader()
@@ -159,9 +166,12 @@ func (c *Connection) Stop() {
 		return
 	}
 
-	c.Conn.Close()
 	c.Close = true
+	c.Conn.Close()
 	close(c.Exit)
+
+	//删除当前连接
+	c.TcpServer.GetConnManager().Remove(c.ConnID)
 }
 
 func (c *Connection) GetTCPConnection() *net.TCPConn {

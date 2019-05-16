@@ -14,6 +14,7 @@ import (
 	"github.com/JeffreyBool/gozinx/src/znet/connection"
 	"github.com/JeffreyBool/gozinx/src/utils"
 	"github.com/JeffreyBool/gozinx/src/znet/messagehandle"
+	"github.com/JeffreyBool/gozinx/src/znet/connmanager"
 )
 
 /**
@@ -43,6 +44,9 @@ type Server struct {
 
 	//当前的 Server 的消息管理模块，用来绑定 msgId 和对应处理业务 API 关系
 	MsgHandle ziface.IMessageHandle
+
+	//该 server 的连接管理器
+	ConnManager ziface.IConnManager
 }
 
 //服务器配置
@@ -67,8 +71,9 @@ func NewServer(args ...Config) ziface.IServer {
 	}
 
 	return &Server{
-		Config:    config,
-		MsgHandle: messagehandle.NewMessageHandle(),
+		Config:      config,
+		MsgHandle:   messagehandle.NewMessageHandle(),
+		ConnManager: connmanager.NewConnManager(),
 	}
 }
 
@@ -106,10 +111,14 @@ func (s *Server) Start() error {
 				continue
 			}
 
-			defer conn.Close()
+			//判断设置连接的最大值
+			if int(s.ConnManager.Size()) >= utils.GlobalObject.MaxConn {
+				conn.Close()
+				continue
+			}
 
 			//已经与客户端建立链接
-			c := connection.NewConnection(conn, ConnID, s.MsgHandle)
+			c := connection.NewConnection(s, conn, ConnID, s.MsgHandle)
 			go c.Start()
 			ConnID ++
 		}
@@ -130,10 +139,18 @@ func (s *Server) Serve() {
 
 //服务停止
 func (s *Server) Stop() error {
+	//将一些服务器的资源、状态或者一些已经开辟的连接信息进行停止或者回收
+	fmt.Printf("[Start] GoZinx Server Name: [%s] \n", s.Name)
+	s.ConnManager.Clear()
 	return nil
 }
 
 //服务添加路由
 func (s *Server) AddRouter(msgId uint32, router ziface.IRouter) error {
 	return s.MsgHandle.AddRouter(msgId, router)
+}
+
+//获取当前服务的连接管理器
+func (s *Server) GetConnManager() ziface.IConnManager {
+	return s.ConnManager
 }
