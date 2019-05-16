@@ -177,11 +177,11 @@ func (c *Connection) Stop() {
 	c.TcpServer.CallOnConnStop(c)
 
 	c.Close = true
-	c.Conn.Close()
 	close(c.Exit)
 
 	//删除当前连接
 	c.TcpServer.GetConnManager().Remove(c.ConnID)
+	c.Conn.Close()
 }
 
 func (c *Connection) GetTCPConnection() *net.TCPConn {
@@ -210,11 +210,6 @@ func (c *Connection) SendMsg(msgId uint32, data []byte) error {
 	}
 
 	c.msgChan <- binaryMsg
-	////将数据发送给客户端
-	//if _, err := c.Conn.Write(binaryMsg); err != nil {
-	//	return errors.Wrap(err, "conn write error")
-	//}
-
 	return nil
 }
 

@@ -13,13 +13,14 @@ import (
 	"github.com/JeffreyBool/gozinx/game/core"
 	"github.com/JeffreyBool/gozinx/game/api"
 	"fmt"
+	"github.com/kr/pretty"
 )
 
 func main() {
 	//创建 gozinx server
 	serve := server.NewServer()
 
-	//连接创建和销毁钩子函数
+	//连接创建钩子函数
 	serve.SetOnConnStart(func(conn ziface.IConnection) {
 		//创建一个 player 对象
 		player := core.NewPlayer(conn)
@@ -43,18 +44,15 @@ func main() {
 		fmt.Printf("<===== Player Id: [%d] Is Arrived ========\n", player.Pid)
 	})
 
+	//连接销毁钩子函数
 	serve.SetOnConnStop(func(conn ziface.IConnection) {
-		pid, err := conn.GetProperty("pid")
-		if err != nil {
-			fmt.Println("GetProperty pid error", err)
-			return
-		}
-
+		//获取当前连接的Pid属性
+		pid, _ := conn.GetProperty("pid")
 		//根据pid得到player对象
 		player := core.WorldManagerObj.GetPlayerByPid(pid.(uint32))
-
+		pretty.Printf("%# v pid:[%d]\n", player, pid)
 		player.LostConnection()
-		fmt.Println("====> Player ", pid , " left =====")
+		fmt.Printf("<=====  Player Id: [%d]  Is Closed ========\n", pid)
 	})
 
 	//注册世界聊天广播路由
