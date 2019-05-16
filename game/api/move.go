@@ -42,11 +42,10 @@ func (router *MoveApi) Handle(request ziface.IRequest) {
 	pid, err := request.GetConnection().GetProperty("pid")
 	if err != nil {
 		fmt.Println("GetProperty pid error", err)
-		request.GetConnection().Stop()
 		return
 	}
 
-	fmt.Printf("user pid = %d , move(%f,%f,%f,%f)", pid, msg.X, msg.Y, msg.Z, msg.V)
+	//fmt.Printf("user pid = %d , move(%f,%f,%f,%f)", pid, msg.X, msg.Y, msg.Z, msg.V)
 
 	//3. 根据pid得到player对象
 	player := core.WorldManagerObj.GetPlayerByPid(pid.(uint32))

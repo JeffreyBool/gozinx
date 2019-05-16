@@ -44,7 +44,17 @@ func main() {
 	})
 
 	serve.SetOnConnStop(func(conn ziface.IConnection) {
+		pid, err := conn.GetProperty("pid")
+		if err != nil {
+			fmt.Println("GetProperty pid error", err)
+			return
+		}
 
+		//根据pid得到player对象
+		player := core.WorldManagerObj.GetPlayerByPid(pid.(uint32))
+
+		player.LostConnection()
+		fmt.Println("====> Player ", pid , " left =====")
 	})
 
 	//注册世界聊天广播路由
