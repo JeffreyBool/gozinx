@@ -162,9 +162,6 @@ func (c *Connection) StartWrite() {
 
 //停止
 func (c *Connection) Stop() {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-
 	if c.Close {
 		return
 	}
@@ -224,11 +221,11 @@ func (c *Connection) SetProperty(key string, value interface{}) {
 func (c *Connection) GetProperty(key string) (value interface{}, err error) {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
-	if value, ok := c.property[key]; ok {
-		return value, nil
-	}else{
+	value, ok := c.property[key]
+	if !ok {
 		return nil, errors.New("not property found")
 	}
+	return
 }
 
 //移除连接属性
