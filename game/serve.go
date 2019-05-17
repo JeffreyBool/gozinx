@@ -13,7 +13,6 @@ import (
 	"github.com/JeffreyBool/gozinx/game/core"
 	"github.com/JeffreyBool/gozinx/game/api"
 	"fmt"
-	"github.com/kr/pretty"
 )
 
 func main() {
@@ -50,7 +49,6 @@ func main() {
 		pid, _ := conn.GetProperty("pid")
 		//根据pid得到player对象
 		player := core.WorldManagerObj.GetPlayerByPid(pid.(uint32))
-		pretty.Printf("%# v pid:[%d]\n", player, pid)
 		player.LostConnection()
 		fmt.Printf("<=====  Player Id: [%d]  Is Closed ========\n", pid)
 	})
