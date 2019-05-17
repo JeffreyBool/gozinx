@@ -41,26 +41,26 @@ func main() {
 			binaryMsg, err := dp.Pack(message.NewMessage(1, []byte("Zinx V1.0 Client Test Message")))
 			if err != nil {
 				fmt.Println("pack error: ", err)
-				break
+				return
 			}
 
 			if _, err = conn.Write(binaryMsg); err != nil {
 				fmt.Println("write error: ", err)
-				break
+				return
 			}
 
 			//接受服务器返回的ping 消息拆包。
 			headData := make([]byte, dp.GetHeadSize())
 			if _, err = io.ReadFull(conn, headData); err != nil { //ReadFull 会把msg填充满为止
 				fmt.Println("read head error: ", err)
-				break
+				return
 			}
 
 			//将headData字节流 拆包到msg中
 			msgHead, err := dp.Unpack(headData)
 			if err != nil {
 				fmt.Println("client unpack msg head error: ", err)
-				break
+				return
 			}
 
 			if msgHead.GetMsgSize() > 0 {
@@ -68,7 +68,7 @@ func main() {
 				buf := make([]byte, msgHead.GetMsgSize())
 				if _, err := io.ReadFull(conn, buf); err != nil {
 					fmt.Println("read msg data error: ", err)
-					break
+					return
 				}
 				msgHead.SetMsg(buf)
 

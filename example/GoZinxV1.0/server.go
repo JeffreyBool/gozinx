@@ -54,20 +54,24 @@ func main() {
 
 	//注册连接的 hook 钩子函数
 	s.SetOnConnStart(func(conn ziface.IConnection) {
-		fmt.Println("====> Do Connection Begin is Called ....")
-		if err := conn.SendMsg(1, []byte("Do Connection Begin Called \n")); err != nil {
-			fmt.Println(err)
-		}
+		conn.SendMsg(401, []byte("用户登录授权失败\n"))
+		conn.Stop()
 
-		//设置两个链接属性，在连接创建之后
-		fmt.Println("Set conn Name, Home done!")
-		conn.SetProperty("Name", "JeffreyBool")
-		conn.SetProperty("Home", "https://www.jianshu.com/u/35261429b7f1")
 
-		err := conn.SendMsg(2, []byte("DoConnection BEGIN..."))
-		if err != nil {
-			fmt.Println(err)
-		}
+		//fmt.Println("====> Do Connection Begin is Called ....")
+		//if err := conn.SendMsg(1, []byte("Do Connection Begin Called \n")); err != nil {
+		//	fmt.Println(err)
+		//}
+		//
+		////设置两个链接属性，在连接创建之后
+		//fmt.Println("Set conn Name, Home done!")
+		//conn.SetProperty("Name", "JeffreyBool")
+		//conn.SetProperty("Home", "https://www.jianshu.com/u/35261429b7f1")
+		//
+		//err := conn.SendMsg(2, []byte("DoConnection BEGIN..."))
+		//if err != nil {
+		//	fmt.Println(err)
+		//}
 	})
 
 	//连接断开之前需要执行的函数

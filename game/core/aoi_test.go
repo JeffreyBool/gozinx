@@ -11,6 +11,7 @@ import (
 	"testing"
 	"github.com/JeffreyBool/gozinx/game/core"
 	"fmt"
+	"runtime"
 )
 
 func TestNewAOIManager(t *testing.T) {
@@ -32,4 +33,10 @@ func TestAOIManager_GetSurroundGridsByGid(t *testing.T) {
 		}
 		fmt.Printf("grid ID: %d, surrounding grid IDs are %v\n", k, gIDs)
 	}
+}
+
+func TestAOIManager_GetGidByPos(t *testing.T) {
+	buf := make([]byte, 2048)
+	n := runtime.Stack(buf, false)
+	fmt.Println(fmt.Sprintf("%s", buf[:n]))
 }
