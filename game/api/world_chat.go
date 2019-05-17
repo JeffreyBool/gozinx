@@ -20,11 +20,6 @@ type WorldChatApi struct {
 	router.BaseRouter
 }
 
-//路由之前的钩子方法
-func (router *WorldChatApi) BeforeHandle(request ziface.IRequest) {
-
-}
-
 //路由处理业务方法
 func (router *WorldChatApi) Handle(request ziface.IRequest) {
 	//解析客户端传递过来的 proto 协议
@@ -48,7 +43,3 @@ func (router *WorldChatApi) Handle(request ziface.IRequest) {
 	player.Talk(msg.Content)
 }
 
-//路由之后的钩子方法
-func (router *WorldChatApi) AfterHandle(request ziface.IRequest) {
-
-}

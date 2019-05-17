@@ -75,7 +75,7 @@ func (m *MessageHandle) StartWorkerPool() {
 
 //启动 worker
 func (m *MessageHandle) startWorker(workerId int, queue chan ziface.IRequest) {
-	fmt.Printf("[Worker] Id: %d is started...\n", workerId)
+	//fmt.Printf("[Worker] Id: %d is started...\n", workerId)
 	for {
 		select {
 		//如果有消息过来，出列的就是一个客户端的 request,执行当前的 request 所绑定的业务

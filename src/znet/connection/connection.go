@@ -68,7 +68,6 @@ func NewConnection(server ziface.IServer, conn *net.TCPConn, ConnID uint32, msgH
 
 func (c *Connection) Start() {
 	fmt.Printf("Conn Start() ... ConnId = %d \n", c.ConnID)
-
 	//添加一个连接
 	c.TcpServer.GetConnManager().Add(c)
 
@@ -93,7 +92,6 @@ func (c *Connection) startReader() {
 	for {
 		// 创建拆包解包的对象
 		dp := datapack.NewDataPack()
-
 		//读取客户端的 msg head 二进制流 8个字节
 		buf := make([]byte, dp.GetHeadSize())
 		if _, err := io.ReadFull(c.Conn, buf); err != nil {
@@ -167,7 +165,6 @@ func (c *Connection) StartWrite() {
 func (c *Connection) Stop() {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
-	fmt.Printf("Conn Stop() ... ConnId = %d\n", c.ConnID)
 
 	if c.Close {
 		return
@@ -175,13 +172,14 @@ func (c *Connection) Stop() {
 
 	//调用开发者注册的销毁连接之前需要执行的业务
 	c.TcpServer.CallOnConnStop(c)
-
 	c.Close = true
 	close(c.Exit)
+	close(c.msgChan)
 
 	//删除当前连接
 	c.TcpServer.GetConnManager().Remove(c.ConnID)
 	c.Conn.Close()
+	fmt.Printf("Conn Stop() ... ConnId: [%d]\n", c.ConnID)
 }
 
 func (c *Connection) GetTCPConnection() *net.TCPConn {
@@ -202,7 +200,7 @@ func (c *Connection) SendMsg(msgId uint32, data []byte) error {
 		return errors.New("connection closed when send msg")
 	}
 
-	//将 data 进行封包 ( size|id|data )
+	//将 data 进行封包 (size|id|data)
 	dp := datapack.NewDataPack()
 	binaryMsg, err := dp.Pack(message.NewMessage(msgId, data))
 	if err != nil {

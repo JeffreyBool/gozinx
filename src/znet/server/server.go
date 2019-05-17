@@ -182,7 +182,7 @@ func (s *Server) CallOnConnStart(conn ziface.IConnection) {
 
 //调用 OnConnStop 钩子函数方法
 func (s *Server) CallOnConnStop(conn ziface.IConnection) {
-	if s.OnConnStart != nil {
+	if s.OnConnStop != nil {
 		fmt.Printf("---> Cll CallOnConnStop() ....\n")
 		s.OnConnStop(conn)
 	}
