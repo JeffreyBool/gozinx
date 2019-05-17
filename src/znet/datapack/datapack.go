@@ -14,7 +14,6 @@ import (
 	"github.com/JeffreyBool/gozinx/src/znet/message"
 	"github.com/JeffreyBool/gozinx/src/utils"
 	"github.com/pkg/errors"
-	"fmt"
 )
 
 /**
@@ -85,7 +84,6 @@ func (data *DataPack) Unpack(binaryData []byte) (ziface.IMessage, error) {
 	}
 
 	//判断当前包的长度是否超过了我们设置允许最大值
-	fmt.Println()
 	if utils.GlobalObject.MaxPackageSize > 0 && msg.Size > utils.GlobalObject.MaxPackageSize {
 		return msg, errors.New("too large msg data recv")
 	}

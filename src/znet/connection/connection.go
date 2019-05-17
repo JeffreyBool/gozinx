@@ -49,7 +49,7 @@ type Connection struct {
 	property map[string]interface{}
 
 	//锁
-	mutex *sync.RWMutex
+	mutex sync.RWMutex
 }
 
 //初始化链接
@@ -62,7 +62,6 @@ func NewConnection(server ziface.IServer, conn *net.TCPConn, ConnID uint32, msgH
 		msgChan:   make(chan []byte),
 		Exit:      make(chan bool, 1),
 		property:  make(map[string]interface{}),
-		mutex:     new(sync.RWMutex),
 	}
 }
 
@@ -182,14 +181,17 @@ func (c *Connection) Stop() {
 	fmt.Printf("Conn Stop() ... ConnId: [%d]\n", c.ConnID)
 }
 
+//获取连接实例
 func (c *Connection) GetTCPConnection() *net.TCPConn {
 	return c.Conn
 }
 
+//获取连接 Id
 func (c *Connection) GetConnID() uint32 {
 	return c.ConnID
 }
 
+//返回连接地址
 func (c *Connection) RemoteAddr() net.Addr {
 	return c.Conn.RemoteAddr()
 }
@@ -222,11 +224,11 @@ func (c *Connection) SetProperty(key string, value interface{}) {
 func (c *Connection) GetProperty(key string) (value interface{}, err error) {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
-	var ok bool
-	if value, ok = c.property[key]; !ok {
+	if value, ok := c.property[key]; ok {
+		return value, nil
+	}else{
 		return nil, errors.New("not property found")
 	}
-	return value, nil
 }
 
 //移除连接属性

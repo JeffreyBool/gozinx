@@ -15,13 +15,14 @@ import (
 	"github.com/JeffreyBool/gozinx/src/utils"
 	"github.com/JeffreyBool/gozinx/src/znet/messagehandle"
 	"github.com/JeffreyBool/gozinx/src/znet/connmanager"
+	"github.com/pkg/errors"
 )
 
 /**
  服务器模块
  **/
 
-var zinx_logo = `
+var logo = `
    ██████╗  ██████╗ ███████╗██╗███╗   ██╗██╗  ██╗
  ██╔════╝ ██╔═══██╗╚══███╔╝██║████╗  ██║╚██╗██╔╝
  ██║  ███╗██║   ██║  ███╔╝ ██║██╔██╗ ██║ ╚███╔╝
@@ -29,19 +30,18 @@ var zinx_logo = `
  ╚██████╔╝╚██████╔╝███████╗██║██║ ╚████║██╔╝ ██╗
   ╚═════╝  ╚═════╝ ╚══════╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝ `
 
-var top_line = `┌───────────────────────────────────────────────────┐`
-var border_line = `│`
-var bottom_line = `└───────────────────────────────────────────────────┘`
+var topLine = `┌───────────────────────────────────────────────────┐`
+var borderLine = `│`
+var bottomLine = `└───────────────────────────────────────────────────┘`
 
 func init() {
-	fmt.Println(top_line)
-	fmt.Println(zinx_logo)
-	fmt.Println(bottom_line)
+	fmt.Println(topLine)
+	fmt.Println(logo)
+	fmt.Println(bottomLine)
 }
 
 type Server struct {
 	Config
-
 	//当前的 Server 的消息管理模块，用来绑定 msgId 和对应处理业务 API 关系
 	MsgHandle ziface.IMessageHandle
 
@@ -85,63 +85,54 @@ func NewServer(args ...Config) ziface.IServer {
 
 func (s *Server) Start() error {
 	fmt.Printf("[START] Server name: %s,listenner at IP: %s, Port %d is starting\n", s.Name, s.IP, s.Port)
-	go func() {
-		//开启消息队列以及 worker 工作池
-		s.MsgHandle.StartWorkerPool()
 
-		//获取tcp的 addr
-		address := fmt.Sprintf("[%s]:%d", s.IP, s.Port)
-		addr, err := net.ResolveTCPAddr(s.IPVersion, address)
+	//获取tcp的 addr
+	address := fmt.Sprintf("[%s]:%d", s.IP, s.Port)
+	addr, err := net.ResolveTCPAddr(s.IPVersion, address)
+	if err != nil {
+		return errors.Wrap(err, "resolve tcp address error")
+	}
+
+	//监听服务器的地址
+	listener, err := net.ListenTCP(s.IPVersion, addr)
+	if err != nil {
+		return errors.Wrapf(err, "listen: %s", s.IPVersion)
+	}
+
+	//阻塞的等待客户端连接，处理客户端连接业务 （读写）
+	var ConnID uint32 = 1
+	for {
+		//如果有客户端链接过来，会阻塞返回
+		conn, err := listener.AcceptTCP()
 		if err != nil {
-			fmt.Printf("resolve tcp address err: %s\n", err)
-			return
-			//return err ors.Wrap(err, "resolve tcp address error")
+			fmt.Printf("Accept err: %s\n", err)
+			continue
 		}
 
-		//监听服务器的地址
-		listener, err := net.ListenTCP(s.IPVersion, addr)
-		if err != nil {
-			fmt.Printf("listen: %s, err: %s \n", s.IPVersion, err)
-			return
-			//return errors.Wrapf(err, "listen: %s", s.IPVersion)
+		//判断设置连接的最大值
+		if int(s.ConnManager.Size()) >= utils.GlobalObject.MaxConn {
+			fmt.Printf("Too Many Connections MaxConn: [%d] \n", utils.GlobalObject.MaxConn)
+			conn.Close()
+			continue
 		}
 
-		//阻塞的等待客户端连接，处理客户端连接业务 （读写）
-		fmt.Printf("start GoZinx server success, name: %s Listenning...\n", s.Name)
-		var ConnID uint32 = 1
-		for {
-			//如果有客户端链接过来，会阻塞返回
-			conn, err := listener.AcceptTCP()
-			if err != nil {
-				fmt.Printf("Accept err: %s\n", err)
-				continue
-			}
-
-			//判断设置连接的最大值
-			if int(s.ConnManager.Size()) >= utils.GlobalObject.MaxConn {
-				fmt.Printf("Too Many Connections MaxConn: [%d] \n", utils.GlobalObject.MaxConn)
-				conn.Close()
-				continue
-			}
-
-			//已经与客户端建立链接
-			c := connection.NewConnection(s, conn, ConnID, s.MsgHandle)
-			go c.Start()
-			ConnID ++
-		}
-	}()
+		//已经与客户端建立链接
+		c := connection.NewConnection(s, conn, ConnID, s.MsgHandle)
+		go c.Start()
+		ConnID ++
+	}
 
 	return nil
 }
 
 //程序运行
 func (s *Server) Serve() {
-	s.Start()
-
+	//开启消息队列以及 worker 工作池
+	s.MsgHandle.StartWorkerPool()
 	//做一些启动服务器之后的额外业务
 
 	//阻塞，防止进程结束
-	select {}
+	s.Start()
 }
 
 //服务停止

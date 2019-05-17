@@ -85,4 +85,5 @@ func (c *ConnManager) Clear() {
 		//删除
 		c.Remove(uint32(connId))
 	}
+	c.size = 0
 }

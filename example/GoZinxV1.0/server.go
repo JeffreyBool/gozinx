@@ -62,17 +62,27 @@ func main() {
 		//设置两个链接属性，在连接创建之后
 		fmt.Println("Set conn Name, Home done!")
 		conn.SetProperty("Name", "JeffreyBool")
+		conn.SetProperty("Home", "https://www.jianshu.com/u/35261429b7f1")
+
+		err := conn.SendMsg(2, []byte("DoConnection BEGIN..."))
+		if err != nil {
+			fmt.Println(err)
+		}
 	})
 
 	//连接断开之前需要执行的函数
 	s.SetOnConnStop(func(conn ziface.IConnection) {
-		fmt.Println("====> Do Connection Lost is Called ....")
 		fmt.Printf("ConnId: [%d], ConnAddr: [%s] is Lost ...\n", conn.GetConnID(), conn.RemoteAddr().String())
 
 		//在连接销毁之前，查询conn的Name，Home属性
 		if name, err := conn.GetProperty("Name"); err == nil {
 			fmt.Println("Conn Property Name = ", name)
 		}
+
+		if home, err := conn.GetProperty("Home"); err == nil {
+			fmt.Println("Conn Property Home = ", home)
+		}
+		fmt.Println("====> Do Connection Lost is Called ....")
 	})
 
 	//给 server 添加一个自定义的 router

@@ -55,7 +55,6 @@ func (m *MessageHandle) AddRouter(msgId uint32, router ziface.IRouter) error {
 	if _, ok := m.Routers[msgId]; ok {
 		return errors.Wrapf(errors.New("repeat api error"), "MsgId: %d", msgId)
 	}
-
 	//添加msgId 与 api 的绑定关系
 	m.Routers[msgId] = router
 	fmt.Printf("add router api MsgId: [%d] success \n", msgId)
@@ -67,7 +66,6 @@ func (m *MessageHandle) StartWorkerPool() {
 	for i := 0; i < int(utils.GlobalObject.WorkerPoolSize); i ++ {
 		//当前的 worker 对应的 channel 消息队列开辟空间， 第 1 个就用 1 个 channel
 		m.TaskQueue[i] = make(chan ziface.IRequest, utils.GlobalObject.MaxWorkerTaskSize)
-
 		//启动当前的 worker， 阻塞等待消息从 channel 传递过来
 		go m.startWorker(i, m.TaskQueue[i])
 	}
@@ -75,12 +73,14 @@ func (m *MessageHandle) StartWorkerPool() {
 
 //启动 worker
 func (m *MessageHandle) startWorker(workerId int, queue chan ziface.IRequest) {
-	//fmt.Printf("[Worker] Id: %d is started...\n", workerId)
 	for {
 		select {
 		//如果有消息过来，出列的就是一个客户端的 request,执行当前的 request 所绑定的业务
 		case request := <-queue:
-			m.DoMsgHandler(request)
+			if err := m.DoMsgHandler(request); err != nil {
+				fmt.Printf("message handle start worker error: %s\n", err)
+				break
+			}
 		}
 	}
 }
